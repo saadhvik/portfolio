@@ -1,128 +1,164 @@
 # Venkata Krishna Saadhvik Muddana — Portfolio
 
-A recruiter-first 3D portfolio. The design goal is a single measurable outcome:
-**a recruiter can decide to interview within 60 seconds**, on any device, with or
-without WebGL, JavaScript, or motion.
-
-## Run it
+Enterprise-grade personal site. Next.js App Router, TypeScript, Tailwind,
+Framer Motion, GSAP ScrollTrigger, Lenis, and a 2D canvas particle field.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # → dist/
-npm run preview    # serve the production build on :4173
+npm run dev      # http://localhost:3000
+npm run build    # production build
+npm start        # serve the build
 ```
 
-Node 18+ required.
+---
 
-## Deploy
+## Customising
 
-### Vercel
-1. Push this folder to a GitHub repo.
-2. vercel.com → **Add New → Project** → import the repo.
-3. Framework preset **Vite** is detected automatically. Confirm:
-   - Build command: `npm run build`
-   - Output directory: `dist`
-4. **Deploy**. Add your custom domain under *Settings → Domains*.
+### Accent colour
 
-Or from the CLI:
-```bash
-npm i -g vercel
-vercel --prod
+The whole site is accented from **one value**. Change it in two places, which
+are kept deliberately in sync:
+
+1. `src/lib/tokens.ts` → `colors.accent.DEFAULT`
+2. `src/app/globals.css` → `--accent` (and `--accent-bright`, ~15% lighter)
+
+`tailwind.config.ts` mirrors the same hex for utility classes. Everything else
+— button hovers, the tilt-card glare, the hero canvas particles, focus rings,
+the page-transition curtain, gradient washes — derives from those via
+`color-mix()`, so one edit repaints the site.
+
+Keep luminance roughly L\*60–70 against `#0A0A0B` or AA contrast breaks on the
+small mono labels.
+
+### Fonts
+
+Both faces load through `next/font/google` in `src/app/layout.tsx`, self-hosted
+at build time — no runtime request to Google, no layout shift.
+
+```ts
+const display = Space_Grotesk({ variable: '--font-display', ... })
+const body    = Inter({ variable: '--font-body', ... })
 ```
 
-### Netlify
-```bash
-npm i -g netlify-cli
-netlify deploy --prod --dir=dist
-```
-`netlify.toml` is already configured (build `npm run build`, publish `dist`).
+To swap: change the import to any `next/font/google` family and **keep the
+`variable` name**. Tailwind reads `--font-display` / `--font-body`, so no
+component changes.
 
-### Live
+For **General Sans** (not on Google Fonts): drop the `.woff2` files into
+`src/app/fonts/`, switch to `next/font/local`, keep the same variable names.
 
-**https://portfolio-psi-ashen-75.vercel.app**
+### Content
 
-Deployed from `main` via the Vercel GitHub App — every push to `main` ships
-automatically. The absolute URLs in `index.html` (`canonical`, `og:url`,
-`og:image`, `twitter:image`, JSON-LD `url`) already point at this domain. **If you
-attach a custom domain later, update all five** — Open Graph images must be
-absolute or LinkedIn renders a blank card.
+Everything lives in `src/data/site.ts`. No copy is hard-coded in a component.
+Projects drive both the bento grid and the case-study routes — adding an entry
+to `projects` generates a new `/work/[slug]` page automatically via
+`generateStaticParams`.
 
-### Still to confirm
-- The LinkedIn and GitHub URLs in `src/data/content.js` are inferred
-  (`/in/saadhvik-muddana`, `github.com/saadhvik`). Verify both resolve.
+---
 
-## Editing content
-
-Everything textual lives in **`src/data/content.js`**. No copy is hard-coded in
-components. To update the resume PDF, replace
-`public/Venkata-Krishna-Saadhvik-Muddana-Resume.pdf` — keep the filename or update
-`profile.resumePdf`.
-
-To regenerate the social card after a copy change, edit the source HTML you used
-for `public/og.png` and re-screenshot at exactly 1200×630.
-
-## Architecture
+## Structure
 
 ```
-index.html                     Meta, Open Graph, JSON-LD Person schema, <noscript> fallback
-public/
-  Venkata-...-Resume.pdf       The actual PDF, served statically
-  og.png                       1200×630 social card
-  favicon.svg
 src/
-  main.jsx                     Entry; adds .js-motion so reveals may start hidden
-  App.jsx                      Layout, 3D gating logic, lazy boundary
-  data/content.js              ALL resume content, single source of truth
-  hooks/
-    usePrefersReducedMotion.js Live media-query subscription
-    useReveal.js               IntersectionObserver reveals
-    useScrollProgress.js       rAF scroll ratio into a ref (no re-renders)
-    useTheme.js                Dark/light with localStorage + system default
+  app/
+    layout.tsx              Fonts, metadata, JSON-LD, providers
+    page.tsx                Home
+    globals.css             Tokens as CSS vars + component/utility layers
+    work/page.tsx           Filterable grid (WorkGrid.tsx is the client part)
+    work/[slug]/page.tsx    Case study — problem → process → outcome
+    about/page.tsx          Story, timeline, tool stack
+    contact/page.tsx        Form (ContactForm.tsx) + details
+    not-found.tsx
   components/
-    Nav.jsx  StickyCTA.jsx  Hero.jsx  Proof.jsx  Experience.jsx
-    Projects.jsx  Skills.jsx  Research.jsx  Contact.jsx  Footer.jsx
-    canvas/
-      SceneRoot.jsx            Canvas setup, DPR clamp, fade-in
-      SpectralField.jsx        The morphing point cloud + GLSL
-  styles/
-    global.css                 Tokens, typography, buttons, reduced-motion rules
-    components.css             Per-component styles
+    providers/
+      SmoothScroll.tsx      Lenis, driven from the GSAP ticker
+      Cursor.tsx            Custom cursor with hover states
+      PageTransition.tsx    Route enter/exit + curtain
+    layout/                 Nav (pill, shared layoutId), Footer (oversized CTA)
+    hero/                   Hero, HeroCanvas (particle field)
+    ui/                     MagneticButton, TiltCard, SplitText, Marquee,
+                            Counter, Reveal, SectionHeading, AnimatedLink
+    sections/               BentoWork, HorizontalGallery, Stats,
+                            SkillsMarquee, AboutTeaser, Credentials
+  lib/
+    tokens.ts               SOURCE OF TRUTH for colour/type/space/easing
+    motion.ts               Shared Framer variants
+    useMotionPreference.ts  Reduced-motion + device-capability gates
+  data/site.ts              All content
 ```
 
-## Performance budget
+---
 
-Measured from `npm run build`:
+## Motion system
 
-| Chunk | Raw | Gzipped | On critical path? |
-|---|---|---|---|
-| `index.html` | 5.5 kB | 1.9 kB | yes |
-| CSS | 16 kB | 4.1 kB | yes |
-| `index` (app) | 26 kB | 8.7 kB | yes |
-| `vendor` (react, react-dom) | 238 kB | 75 kB | yes |
-| `three` (three + r3f + drei) | 706 kB | 179 kB | **no — lazy** |
-| `SceneRoot` | 5.8 kB | 2.5 kB | **no — lazy** |
+Four easings, three durations, defined once in `tokens.ts`. Nothing declares an
+ad-hoc curve. The project default is `cubic-bezier(0.16, 1, 0.3, 1)`.
 
-**Critical path ≈ 90 kB gzipped.** Total with 3D ≈ 271 kB gzipped, under the
-500 kB budget. The hero paints before `three` is even requested.
+| Interaction | Where | Notes |
+|---|---|---|
+| Masked char reveal | `SplitText` | Chars grouped per word so lines never break mid-token |
+| Magnetic hover | `MagneticButton` | Label drifts less than the shell — reads as weight |
+| 3D tilt + glare | `TiltCard` | Capped at 7° — past ~10° text smears |
+| Pinned horizontal scroll | `HorizontalGallery` | Desktop only; pin length = scroll distance, so travel is 1:1 |
+| Infinite marquee | `Marquee` | Pure CSS transform, pauses on hover |
+| Number counters | `Counter` | Final value renders by default; animation is additive |
+| Route transitions | `PageTransition` | `mode="wait"` so heights don't jump |
+| Particle field | `HeroCanvas` | Lattice + pointer displacement, springs home |
 
-## Graceful degradation
+**Only `transform` and `opacity` are animated.** Every animated node carries
+`.gpu` (own layer, no layout/paint work).
 
-The 3D scene is skipped entirely — not merely hidden — when any of these hold:
+### Why Canvas2D and not Three.js for the hero
 
-- `prefers-reduced-motion: reduce`
-- `navigator.connection.saveData`, or `effectiveType` is 2g
-- `deviceMemory < 4 GB` or `hardwareConcurrency < 4`
-- no WebGL context available
+The hero is additive dots on a lattice. Three.js would add ~180KB gzipped to
+draw what Canvas2D does at 60fps in under 3KB. WebGL is right for geometry and
+shading; it is the wrong tool for 2,000 circles.
 
-In every one of those cases the site is a complete, fully-readable portfolio. The
-`<noscript>` block covers a JS-disabled corporate laptop with name, role, value
-proposition, resume link, and contact details.
+---
+
+## Degradation
+
+The motion system degrades as a whole, not in pieces.
+
+`prefers-reduced-motion: reduce` →
+Lenis never initialises (native scroll returns) · ScrollTrigger pinning never
+registers · the custom cursor never mounts · `SplitText` renders plain text ·
+counters show their final value · the marquee stops and becomes a scrollable
+list · all CSS transitions collapse to 0.01ms.
+
+The hero canvas is *additionally* skipped on Save-Data, 2G, `deviceMemory < 4`,
+or `hardwareConcurrency < 4`. A static gradient wash renders underneath it in
+every case, so the hero is never an empty void.
+
+Horizontal pinning is desktop-only (`min-width: 1024px`) — trapping vertical
+scroll on a phone is hostile. Below that it is a normal scrollable row.
+
+---
 
 ## Accessibility
 
-- Semantic landmarks: `header` / `main` / `section` / `footer`, one `h1`
-- Skip link, visible `:focus-visible` rings, `aria-current` on the active nav item
-- Canvas is `aria-hidden` and `pointer-events: none` — it carries no information
-- All motion respects `prefers-reduced-motion`; reveals fall back to static
-- Contrast meets WCAG AA in both themes for body and UI text
+- Semantic landmarks, one `h1` per route, real `ol`/`ul`/`dl`
+- Skip link; visible focus rings on every interactive element
+- `SplitText` exposes the intact sentence to screen readers and marks the
+  per-character spans `aria-hidden` — no character-by-character announcement
+- Nav uses `aria-current="page"`; filters use `aria-pressed`
+- Canvas is `aria-hidden` and carries no information
+- The custom cursor never hides the native cursor until it has confirmed a fine
+  pointer, so a failure can't leave anyone without a cursor
+
+## TODOs
+
+Marked inline with `TODO(saadhvik)`:
+
+- **`src/data/site.ts`** — verify the LinkedIn and GitHub URLs resolve (both
+  inferred from the résumé PDF, which hyperlinks the words but not the targets)
+- **`src/app/work/[slug]/page.tsx`** — the full-bleed stat band is a deliberate
+  stand-in for a screenshot or architecture diagram; swap it when you have one
+- **`src/app/contact/ContactForm.tsx`** — currently composes a `mailto:`. Swap
+  `handleSubmit` for a POST if you want submissions in a database
+
+## Deploy
+
+Vercel auto-detects Next.js. Push to `main` and it ships. `metadataBase` is set
+from `profile.siteUrl` in `src/data/site.ts` — update that when a custom domain
+is attached, or Open Graph images resolve against the wrong host.

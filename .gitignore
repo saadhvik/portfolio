@@ -1,7 +1,8 @@
 node_modules
-dist
-.vite
+.next
+out
 .DS_Store
 *.local
 .vercel
-.netlify
+.env*
+next-env.d.ts
