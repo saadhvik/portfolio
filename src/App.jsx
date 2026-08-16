@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Nav from './components/Nav.jsx'
 import StickyCTA from './components/StickyCTA.jsx'
 import Hero from './components/Hero.jsx'
@@ -13,10 +13,6 @@ import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion.js'
 import { useReveal } from './hooks/useReveal.js'
 import { useScrollProgress } from './hooks/useScrollProgress.js'
 import { useTheme } from './hooks/useTheme.js'
-
-// The entire 3D bundle lives behind this boundary. It is fetched only after
-// the hero text has painted, and only on devices that can carry it.
-const SceneRoot = lazy(() => import('./components/canvas/SceneRoot.jsx'))
 
 function canRun3D() {
   if (typeof window === 'undefined') return false
@@ -60,17 +56,11 @@ export default function App() {
     <>
       <a className="skip-link" href="#main">Skip to content</a>
 
-      {mount3D && (
-        <Suspense fallback={null}>
-          <SceneRoot scroll={scroll} theme={theme} />
-        </Suspense>
-      )}
-
       <Nav theme={theme} onToggleTheme={toggle} />
 
       <div className="shell">
         <main id="main">
-          <Hero />
+          <Hero show3D={mount3D} scroll={scroll} theme={theme} />
           <Proof />
           <Experience />
           <Projects />

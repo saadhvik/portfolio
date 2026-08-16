@@ -3,100 +3,104 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 /**
- * Three formations the same points morph between as you scroll:
- *   A (0.00) — unstructured noise shell .... "raw sensor data"
- *   B (0.50) — ordered spectral cube ....... "structured, analysis-ready"
- *   C (1.00) — a single response surface ... "one decision"
+ * Three formations for the same set of points:
+ *   NOISE   — unstructured shell ......... "raw sensor data"
+ *   CUBE    — ordered spectral lattice ... "structured, analysis-ready"  (rest state)
+ *   SURFACE — one fitted response surface  "one decision"
  *
- * That morph IS the resume: raw signal → structure → decision.
+ * On mount the points assemble NOISE -> CUBE over 1.8s, so the story lands
+ * before a recruiter scrolls at all. Scrolling then carries CUBE -> SURFACE.
  */
 function buildFormations(count) {
-  const a = new Float32Array(count * 3)
-  const b = new Float32Array(count * 3)
-  const c = new Float32Array(count * 3)
+  const noise = new Float32Array(count * 3)
+  const cube = new Float32Array(count * 3)
+  const surface = new Float32Array(count * 3)
   const seed = new Float32Array(count)
   const band = new Float32Array(count)
 
-  // Cube edge length for formation B (nearest cube that fits `count`).
   const edge = Math.max(2, Math.round(Math.cbrt(count)))
-  const SPAN = 5.2
+  const SPAN = 4.8
 
   for (let i = 0; i < count; i++) {
     const i3 = i * 3
 
-    // --- A: noise shell, biased outward, deliberately uneven ---
+    // --- NOISE: a loose shell, deliberately uneven ---
     const th = Math.random() * Math.PI * 2
     const ph = Math.acos(2 * Math.random() - 1)
-    const r = 3.4 + Math.pow(Math.random(), 0.6) * 3.2
-    a[i3 + 0] = Math.sin(ph) * Math.cos(th) * r
-    a[i3 + 1] = Math.sin(ph) * Math.sin(th) * r * 0.72
-    a[i3 + 2] = Math.cos(ph) * r
+    const r = 4.0 + Math.pow(Math.random(), 0.6) * 4.0
+    noise[i3 + 0] = Math.sin(ph) * Math.cos(th) * r
+    noise[i3 + 1] = Math.sin(ph) * Math.sin(th) * r
+    noise[i3 + 2] = Math.cos(ph) * r
 
-    // --- B: regular lattice, a spectral cube ---
+    // --- CUBE: regular lattice, the hyperspectral data cube ---
     const x = i % edge
     const y = Math.floor(i / edge) % edge
     const z = Math.floor(i / (edge * edge)) % edge
-    b[i3 + 0] = (x / (edge - 1) - 0.5) * SPAN
-    b[i3 + 1] = (y / (edge - 1) - 0.5) * SPAN * 0.62
-    b[i3 + 2] = (z / (edge - 1) - 0.5) * SPAN
+    const nx = x / (edge - 1) - 0.5
+    const ny = y / (edge - 1) - 0.5
+    const nz = z / (edge - 1) - 0.5
+    cube[i3 + 0] = nx * SPAN
+    cube[i3 + 1] = ny * SPAN * 0.78
+    cube[i3 + 2] = nz * SPAN
 
-    // --- C: a smooth response surface (the fitted model) ---
-    const u = (x / (edge - 1) - 0.5) * 2
-    const v = (z / (edge - 1) - 0.5) * 2
+    // --- SURFACE: a smooth fitted response surface ---
+    const u = nx * 2
+    const v = nz * 2
     const d = Math.sqrt(u * u + v * v)
-    c[i3 + 0] = u * 4.6
-    c[i3 + 1] = Math.exp(-d * d * 1.5) * 2.1 - 0.55 + Math.sin(u * 3.1) * 0.16
-    c[i3 + 2] = v * 4.6
+    surface[i3 + 0] = u * 4.2
+    surface[i3 + 1] = Math.exp(-d * d * 1.6) * 2.0 - 0.5 + Math.sin(u * 3.1) * 0.14
+    surface[i3 + 2] = v * 4.2
 
     seed[i] = Math.random()
-    // Spectral band index drives the colour ramp: cyan → violet → amber.
+    // Spectral band index drives the colour ramp: cyan -> violet -> amber.
     band[i] = y / (edge - 1)
+    // Points on the outer shell of the lattice are drawn larger, which gives
+    // the cube a readable silhouette instead of a uniform fog.
+    const onShell =
+      x === 0 || y === 0 || z === 0 || x === edge - 1 || y === edge - 1 || z === edge - 1
+    seed[i] = onShell ? 0.62 + Math.random() * 0.38 : Math.random() * 0.42
   }
 
-  return { a, b, c, seed, band }
+  return { noise, cube, surface, seed, band }
 }
 
 const VERT = /* glsl */ `
-  attribute vec3 aPosB;
-  attribute vec3 aPosC;
+  attribute vec3 aCube;
+  attribute vec3 aSurface;
   attribute float aSeed;
   attribute float aBand;
 
-  uniform float uProgress;
+  uniform float uProgress;   // 0 -> 1 as the hero scrolls away
+  uniform float uAssemble;   // 0 -> 1 entrance, noise -> cube
   uniform float uTime;
   uniform float uSize;
   uniform float uPixelRatio;
 
   varying float vBand;
-  varying float vFade;
+  varying float vShell;
 
   void main() {
-    // Two-stage morph with a per-point stagger so the field resolves in
-    // waves instead of snapping as one rigid body.
-    float stagger = aSeed * 0.28;
-    float p = clamp((uProgress - stagger) / (1.0 - 0.28), 0.0, 1.0);
+    // Per-point stagger so the lattice resolves in waves, not as a rigid body.
+    float stagger = fract(aSeed * 7.3) * 0.3;
+    float a = clamp((uAssemble - stagger) / (1.0 - 0.3), 0.0, 1.0);
+    a = 1.0 - pow(1.0 - a, 3.0);                 // easeOutCubic
 
-    vec3 pos;
-    if (p < 0.5) {
-      pos = mix(position, aPosB, smoothstep(0.0, 1.0, p * 2.0));
-    } else {
-      pos = mix(aPosB, aPosC, smoothstep(0.0, 1.0, (p - 0.5) * 2.0));
-    }
+    vec3 assembled = mix(position, aCube, a);
+    float p = smoothstep(0.0, 1.0, uProgress);
+    vec3 pos = mix(assembled, aSurface, p);
 
-    // Residual jitter: strong while the data is "raw", ~0 once it is fitted.
-    float noiseAmp = (1.0 - smoothstep(0.0, 0.85, p)) * 0.34;
-    pos.x += sin(uTime * 0.6 + aSeed * 34.0) * noiseAmp;
-    pos.y += cos(uTime * 0.5 + aSeed * 21.0) * noiseAmp;
-    pos.z += sin(uTime * 0.45 + aSeed * 12.0) * noiseAmp;
+    // Residual jitter: strong while the data is still raw, ~0 once fitted.
+    float amp = (1.0 - a) * 0.5 + 0.035;
+    pos.x += sin(uTime * 0.7 + aSeed * 34.0) * amp;
+    pos.y += cos(uTime * 0.6 + aSeed * 21.0) * amp;
+    pos.z += sin(uTime * 0.5 + aSeed * 12.0) * amp;
 
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = uSize * uPixelRatio * (1.0 / -mv.z) * (0.75 + aSeed * 0.5);
+    gl_PointSize = uSize * uPixelRatio * (0.45 + aSeed * 0.85) * (1.0 / -mv.z);
 
     vBand = aBand;
-    // Brightest in the hero, where the field is the only visual, then it
-    // recedes as text density rises. Motion serves the copy, not the reverse.
-    vFade = mix(0.72, 0.42, smoothstep(0.05, 0.55, p));
+    vShell = aSeed;
   }
 `
 
@@ -110,10 +114,9 @@ const FRAG = /* glsl */ `
   uniform float uOpacity;
 
   varying float vBand;
-  varying float vFade;
+  varying float vShell;
 
   void main() {
-    // Round, soft-edged point. Discarding the corners keeps overdraw cheap.
     vec2 uv = gl_PointCoord - 0.5;
     float d = dot(uv, uv);
     if (d > 0.25) discard;
@@ -123,30 +126,30 @@ const FRAG = /* glsl */ `
       ? mix(uColorLow, uColorMid, vBand * 2.0)
       : mix(uColorMid, uColorHigh, (vBand - 0.5) * 2.0);
 
-    float a = alpha * uOpacity * vFade;
+    // Interior points sit back; shell points carry the silhouette.
+    float weight = 0.35 + vShell * 0.65;
+    float a = alpha * uOpacity * weight;
+
     // Premultiplied output. The canvas is transparent and composited by the
-    // browser as premultiplied, so emitting straight alpha here makes the
-    // whole field vanish on dark backgrounds.
+    // browser as premultiplied, so straight alpha here makes the field vanish.
     gl_FragColor = vec4(col * a, a);
   }
 `
 
-export default function SpectralField({ scroll, count = 5832, theme = 'dark' }) {
-  const points = useRef()
+export default function SpectralField({ scroll, count = 4096, theme = 'dark' }) {
   const material = useRef()
   const group = useRef()
   const pointer = useRef({ x: 0, y: 0 })
   const eased = useRef(0)
+  const assemble = useRef(0)
+  const start = useRef(0)
 
-  const { a, b, c, seed, band } = useMemo(() => buildFormations(count), [count])
+  const { noise, cube, surface, seed, band } = useMemo(() => buildFormations(count), [count])
 
-  // Light mode needs its own ramp. On a white ground, additive neon reads as
-  // screen dust; saturated dark inks read as a plotted scatter, which is the
-  // intent. Opacity drops too so body copy always wins the contrast fight.
   const palette = useMemo(
     () => ({
-      dark:  { low: '#22D3EE', mid: '#A78BFA', high: '#FBBF24', opacity: 0.9, size: 48 },
-      light: { low: '#0E7490', mid: '#5B21B6', high: '#B45309', opacity: 0.4, size: 40 },
+      dark: { low: '#22D3EE', mid: '#A78BFA', high: '#FBBF24', opacity: 0.95, size: 46 },
+      light: { low: '#0E7490', mid: '#5B21B6', high: '#B45309', opacity: 0.8, size: 42 },
     }),
     []
   )
@@ -156,6 +159,7 @@ export default function SpectralField({ scroll, count = 5832, theme = 'dark' }) 
       const p = palette[theme === 'light' ? 'light' : 'dark']
       return {
         uProgress: { value: 0 },
+        uAssemble: { value: 0 },
         uTime: { value: 0 },
         uSize: { value: p.size },
         uPixelRatio: { value: Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1, 2) },
@@ -183,36 +187,41 @@ export default function SpectralField({ scroll, count = 5832, theme = 'dark' }) 
 
   useFrame((state, delta) => {
     const d = Math.min(delta, 0.05)
-    const target = scroll.current
 
-    // Critically-damped follow: the field trails the scrollbar by ~120ms,
+    // Entrance: noise -> cube over a wall-clock 1.8s. Driven by elapsed time,
+    // not accumulated deltas — a delta-sum with a per-frame clamp stretches to
+    // many seconds on a slow GPU, leaving the object stuck as noise.
+    if (start.current === 0) start.current = state.clock.elapsedTime
+    assemble.current = Math.min(1, (state.clock.elapsedTime - start.current) / 1.8)
+
+    // Critically-damped follow: the morph trails the scrollbar by ~120ms,
     // which reads as inertia without ever feeling laggy.
-    eased.current += (target - eased.current) * (1 - Math.exp(-6.5 * d))
+    eased.current += (scroll.current - eased.current) * (1 - Math.exp(-6.5 * d))
 
-    if (material.current) {
-      material.current.uniforms.uProgress.value = eased.current
-      material.current.uniforms.uTime.value = state.clock.elapsedTime
+    const m = material.current
+    if (m) {
+      m.uniforms.uProgress.value = eased.current
+      m.uniforms.uAssemble.value = assemble.current
+      m.uniforms.uTime.value = state.clock.elapsedTime
     }
 
     if (group.current) {
-      const px = state.pointer.x
-      const py = state.pointer.y
-      pointer.current.x += (px - pointer.current.x) * (1 - Math.exp(-3.5 * d))
-      pointer.current.y += (py - pointer.current.y) * (1 - Math.exp(-3.5 * d))
+      pointer.current.x += (state.pointer.x - pointer.current.x) * (1 - Math.exp(-3.5 * d))
+      pointer.current.y += (state.pointer.y - pointer.current.y) * (1 - Math.exp(-3.5 * d))
 
-      group.current.rotation.y = eased.current * Math.PI * 0.85 + pointer.current.x * 0.16
-      group.current.rotation.x = -0.12 + eased.current * 0.42 + pointer.current.y * -0.1
-      group.current.position.y = eased.current * -0.8
+      // Continuous slow rotation so the object reads as solid even at rest.
+      group.current.rotation.y = state.clock.elapsedTime * 0.14 + pointer.current.x * 0.3
+      group.current.rotation.x = -0.18 + eased.current * 0.5 + pointer.current.y * -0.18
     }
   })
 
   return (
     <group ref={group}>
-      <points ref={points} frustumCulled={false}>
+      <points frustumCulled={false}>
         <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[a, 3]} />
-          <bufferAttribute attach="attributes-aPosB" args={[b, 3]} />
-          <bufferAttribute attach="attributes-aPosC" args={[c, 3]} />
+          <bufferAttribute attach="attributes-position" args={[noise, 3]} />
+          <bufferAttribute attach="attributes-aCube" args={[cube, 3]} />
+          <bufferAttribute attach="attributes-aSurface" args={[surface, 3]} />
           <bufferAttribute attach="attributes-aSeed" args={[seed, 1]} />
           <bufferAttribute attach="attributes-aBand" args={[band, 1]} />
         </bufferGeometry>
