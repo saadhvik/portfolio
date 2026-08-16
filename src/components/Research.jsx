@@ -8,12 +8,28 @@ export default function Research() {
         <h2 data-reveal data-reveal-delay="60">Work that survived outside review.</h2>
         <p className="lede" data-reveal data-reveal-delay="100">
           Three peer-reviewed publications, two filed patents, and two Oracle Cloud
-          professional certifications — external validation that the methods hold up.
+          professional certifications — external validation that the methods hold up,
+          earned before finishing the master&apos;s.
         </p>
+
+        <ul className="res__banner" data-reveal data-reveal-delay="130">
+          <li className="res__stat">
+            <span className="res__stat-v">3</span>
+            <span className="res__stat-l">Publications</span>
+          </li>
+          <li className="res__stat">
+            <span className="res__stat-v">2</span>
+            <span className="res__stat-l">Patents filed</span>
+          </li>
+          <li className="res__stat">
+            <span className="res__stat-v">2</span>
+            <span className="res__stat-l">Certifications</span>
+          </li>
+        </ul>
 
         <div className="res__grid">
           <section className="res__col card" data-reveal data-reveal-delay="140">
-            <h3 className="res__title">Publications <span className="res__count">3</span></h3>
+            <h3 className="res__title">Publications</h3>
             <ul className="res__list">
               {publications.map((p) => (
                 <li key={p.title}>
@@ -25,7 +41,7 @@ export default function Research() {
           </section>
 
           <section className="res__col card" data-reveal data-reveal-delay="200">
-            <h3 className="res__title">Patents filed <span className="res__count">2</span></h3>
+            <h3 className="res__title">Patents filed</h3>
             <ul className="res__list">
               {patents.map((p) => (
                 <li key={p.id}>

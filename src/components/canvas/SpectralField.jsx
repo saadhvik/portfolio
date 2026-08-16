@@ -148,8 +148,11 @@ export default function SpectralField({ scroll, count = 4096, theme = 'dark' }) 
 
   const palette = useMemo(
     () => ({
-      dark: { low: '#22D3EE', mid: '#A78BFA', high: '#FBBF24', opacity: 0.95, size: 46 },
-      light: { low: '#0E7490', mid: '#5B21B6', high: '#B45309', opacity: 0.8, size: 42 },
+      // Ink on paper. On the light ground the points are pigment, so they
+      // darken the page (source-over); on the dark ground they are light and
+      // add. Same object, two honest renderings.
+      light: { low: '#0F6E77', mid: '#5B3A96', high: '#A9541B', opacity: 0.92, size: 44 },
+      dark: { low: '#4FD1C5', mid: '#B79CF5', high: '#E9A23B', opacity: 0.95, size: 46 },
     }),
     []
   )
