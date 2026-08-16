@@ -38,12 +38,19 @@ netlify deploy --prod --dir=dist
 ```
 `netlify.toml` is already configured (build `npm run build`, publish `dist`).
 
-### After deploying — do these two things
-1. Replace `https://saadhvik.dev/` in `index.html` (`<link rel="canonical">`,
-   `og:url`, `og:image`, `twitter:image`, JSON-LD `url`) with your real domain.
-   Open Graph images must be absolute URLs or LinkedIn will not render the card.
-2. Confirm the LinkedIn and GitHub URLs in `src/data/content.js` are correct —
-   they are inferred placeholders (`/in/saadhvik-muddana`, `github.com/saadhvik`).
+### Live
+
+**https://portfolio-psi-ashen-75.vercel.app**
+
+Deployed from `main` via the Vercel GitHub App — every push to `main` ships
+automatically. The absolute URLs in `index.html` (`canonical`, `og:url`,
+`og:image`, `twitter:image`, JSON-LD `url`) already point at this domain. **If you
+attach a custom domain later, update all five** — Open Graph images must be
+absolute or LinkedIn renders a blank card.
+
+### Still to confirm
+- The LinkedIn and GitHub URLs in `src/data/content.js` are inferred
+  (`/in/saadhvik-muddana`, `github.com/saadhvik`). Verify both resolve.
 
 ## Editing content
 
