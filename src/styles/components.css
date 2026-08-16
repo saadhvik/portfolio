@@ -116,7 +116,22 @@
   padding-top: 6rem;
   padding-bottom: 5rem;
 }
-.hero__inner { max-width: 56rem; }
+/* The hero is the one section with no scrim — the field is meant to be open
+   there. But the copy still has to win, so a soft radial well is dropped
+   behind the text block only, leaving the outer field at full strength. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    62% 58% at 32% 52%,
+    color-mix(in srgb, var(--bg) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 62%, transparent) 45%,
+    transparent 72%
+  );
+}
+.hero__inner { max-width: 56rem; position: relative; }
 
 .hero__status {
   display: inline-flex; align-items: center; gap: 0.55rem;

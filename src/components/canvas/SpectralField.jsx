@@ -96,7 +96,7 @@ const VERT = /* glsl */ `
     vBand = aBand;
     // Brightest in the hero, where the field is the only visual, then it
     // recedes as text density rises. Motion serves the copy, not the reverse.
-    vFade = mix(1.0, 0.5, smoothstep(0.05, 0.55, p));
+    vFade = mix(0.72, 0.42, smoothstep(0.05, 0.55, p));
   }
 `
 
