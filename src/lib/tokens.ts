@@ -25,7 +25,7 @@ export const colors = {
   ink: {
     DEFAULT: '#F4F4F5', // primary text
     muted: '#A1A1AA', // body / secondary
-    faint: '#6B6B76', // labels, meta
+    faint: '#8A8A97', // labels, meta
   },
   accent: {
     DEFAULT: '#6E5BFF', // electric indigo

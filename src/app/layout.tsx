@@ -61,6 +61,12 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
+  // Without an explicit icon the browser requests /favicon.ico and 404s,
+  // which Lighthouse reports as a console error.
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    apple: '/favicon.svg',
+  },
 }
 
 export const viewport: Viewport = {

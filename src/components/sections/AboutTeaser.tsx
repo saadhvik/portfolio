@@ -27,8 +27,8 @@ export default function AboutTeaser() {
           </Reveal>
           <ol className="space-y-0">
             {experience.map((job, i) => (
-              <Reveal key={job.org} delay={0.06 * i}>
-                <li className="border-t border-base-600 py-5">
+              <Reveal key={job.org} delay={0.06 * i} as="li" className="border-t border-base-600 py-5">
+                <div>
                   <div className="flex items-baseline justify-between gap-4">
                     <h3 className="text-h3 font-medium text-ink">{job.org}</h3>
                     {job.current && (
@@ -41,7 +41,7 @@ export default function AboutTeaser() {
                     {job.role} · {job.period}
                   </p>
                   <p className="mt-2 text-sm text-ink-muted">{job.summary}</p>
-                </li>
+                </div>
               </Reveal>
             ))}
           </ol>

@@ -72,8 +72,12 @@ export default function AboutPage() {
         </Reveal>
         <ol className="relative">
           {experience.map((job, i) => (
-            <Reveal key={job.org} delay={i * 0.06}>
-              <li className="relative grid gap-2 border-t border-base-600 py-8 md:grid-cols-[220px_1fr] md:gap-10">
+            <Reveal
+              key={job.org}
+              delay={i * 0.06}
+              as="li"
+              className="relative grid gap-2 border-t border-base-600 py-8 md:grid-cols-[220px_1fr] md:gap-10"
+            >
                 <div className="flex items-start gap-3">
                   <span
                     className={`mt-2 h-2 w-2 shrink-0 rounded-full ${
@@ -91,7 +95,6 @@ export default function AboutPage() {
                   <p className="mt-2 max-w-prose text-body text-ink-muted">{job.summary}</p>
                   <p className="mt-2 font-mono text-xs text-ink-faint">{job.place}</p>
                 </div>
-              </li>
             </Reveal>
           ))}
         </ol>

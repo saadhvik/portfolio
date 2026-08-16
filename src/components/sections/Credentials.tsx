@@ -22,16 +22,17 @@ export default function Credentials() {
           </Reveal>
           <ul>
             {publications.map((p, i) => (
-              <Reveal key={p.title} delay={i * 0.05}>
-                <li className="border-t border-base-600 py-5">
-                  <h3 className="max-w-prose text-h3 font-medium leading-snug text-ink">
-                    {p.title}
-                  </h3>
-                  <p className="mt-2 font-mono text-xs text-ink-faint">
-                    {p.venue}
-                    {p.year !== '—' ? ` · ${p.year}` : ''}
-                  </p>
-                </li>
+              <Reveal
+                key={p.title}
+                delay={i * 0.05}
+                as="li"
+                className="border-t border-base-600 py-5"
+              >
+                <h3 className="max-w-prose text-h3 font-medium leading-snug text-ink">{p.title}</h3>
+                <p className="mt-2 font-mono text-xs text-ink-faint">
+                  {p.venue}
+                  {p.year !== '—' ? ` · ${p.year}` : ''}
+                </p>
               </Reveal>
             ))}
           </ul>
@@ -43,11 +44,14 @@ export default function Credentials() {
           </Reveal>
           <ul>
             {patents.map((p, i) => (
-              <Reveal key={p.id} delay={i * 0.05}>
-                <li className="border-t border-base-600 py-4">
-                  <h3 className="text-base font-medium text-ink">{p.title}</h3>
-                  <p className="mt-1 font-mono text-xs text-ink-faint">{p.id}</p>
-                </li>
+              <Reveal
+                key={p.id}
+                delay={i * 0.05}
+                as="li"
+                className="border-t border-base-600 py-4"
+              >
+                <h3 className="text-base font-medium text-ink">{p.title}</h3>
+                <p className="mt-1 font-mono text-xs text-ink-faint">{p.id}</p>
               </Reveal>
             ))}
           </ul>
@@ -57,8 +61,13 @@ export default function Credentials() {
           </Reveal>
           <ul>
             {certifications.map((c, i) => (
-              <Reveal key={c} delay={i * 0.05}>
-                <li className="border-t border-base-600 py-4 text-sm text-ink-muted">{c}</li>
+              <Reveal
+                key={c}
+                delay={i * 0.05}
+                as="li"
+                className="border-t border-base-600 py-4 text-sm text-ink-muted"
+              >
+                {c}
               </Reveal>
             ))}
           </ul>
