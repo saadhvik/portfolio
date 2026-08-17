@@ -146,16 +146,29 @@ scroll on a phone is hostile. Below that it is a normal scrollable row.
 - The custom cursor never hides the native cursor until it has confirmed a fine
   pointer, so a failure can't leave anyone without a cursor
 
-## TODOs
+## Verified
 
-Marked inline with `TODO(saadhvik)`:
+- **GitHub** — `github.com/saadhvik` returns 200 and is the account the CLI
+  authenticates as.
+- **LinkedIn** — `linkedin.com/in/venkatakrishnasaadhvikmuddana`. The earlier
+  guess (`/in/saadhvik-muddana`) was **wrong** and would have 404'd. LinkedIn
+  answers 999 to any automated request, so this was resolved by search and
+  cross-checked against employer (Infosys), school (UC) and city.
 
-- **`src/data/site.ts`** — verify the LinkedIn and GitHub URLs resolve (both
-  inferred from the résumé PDF, which hyperlinks the words but not the targets)
-- **`src/app/work/[slug]/page.tsx`** — the full-bleed stat band is a deliberate
-  stand-in for a screenshot or architecture diagram; swap it when you have one
-- **`src/app/contact/ContactForm.tsx`** — currently composes a `mailto:`. Swap
-  `handleSubmit` for a POST if you want submissions in a database
+## Remaining option
+
+- **`src/app/contact/ContactForm.tsx`** composes a `mailto:` rather than
+  posting anywhere. This is deliberate — no server, no spam surface, and no
+  silently dropped messages. If you'd rather capture submissions, swap
+  `handleSubmit` for a POST to `/api/contact` (or Formspree / Resend) and keep
+  the mailto as the no-JS fallback on the `<form action>`.
+
+## Case-study diagrams
+
+Each project carries a `pipeline` array in `src/data/site.ts`, rendered by
+`ArchitectureDiagram`. A screenshot of a backend system shows a dashboard, not
+the engineering — the pipeline is the work, so the pipeline is what gets drawn.
+Add or reorder stages in the data and the diagram follows.
 
 ## Deploy
 

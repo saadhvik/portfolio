@@ -18,9 +18,12 @@ export const profile = {
   email: 'muddanvk@mail.uc.edu',
   phone: '513-349-6965',
   phoneHref: '+15133496965',
-  // TODO(saadhvik): verify these two resolve — inferred from the resume PDF.
-  linkedin: 'https://www.linkedin.com/in/saadhvik-muddana',
+  // Both verified: github.com/saadhvik returns 200 and is the authenticated
+  // account; the LinkedIn slug was confirmed by search (Infosys + UC + Cincinnati).
+  linkedin: 'https://www.linkedin.com/in/venkatakrishnasaadhvikmuddana/',
+  linkedinLabel: '/in/venkatakrishnasaadhvikmuddana',
   github: 'https://github.com/saadhvik',
+  githubLabel: 'github.com/saadhvik',
   resume: '/Venkata-Krishna-Saadhvik-Muddana-Resume.pdf',
   siteUrl: 'https://portfolio-psi-ashen-75.vercel.app',
 } as const
@@ -48,6 +51,8 @@ export type Project = {
   process: string[]
   outcome: string
   stack: string[]
+  /** System architecture, rendered as a flow diagram on the case-study page. */
+  pipeline: { stage: string; detail: string }[]
 }
 
 export const projects: Project[] = [
@@ -78,6 +83,14 @@ export const projects: Project[] = [
     outcome:
       '90 seconds per patient instead of four hours, at 81% top-3 accuracy against oncologist-reviewed ground truth. Retrieval precision came in 34% above a BM25 baseline, and the service holds sub-3s response at 300+ requests/day.',
     stack: ['GPT-4', 'Vector search', 'FastAPI', 'AWS Lambda', 'PostgreSQL', 'CloudWatch', 'Python'],
+    pipeline: [
+      { stage: 'ClinicalTrials.gov', detail: '50,000+ raw trial records' },
+      { stage: 'Medical chunking', detail: 'inclusion/exclusion kept intact' },
+      { stage: 'Vector index', detail: 'semantic search over criteria' },
+      { stage: 'GPT-4 re-rank', detail: 'justified, auditable ordering' },
+      { stage: 'FastAPI on Lambda', detail: 'async jobs, Postgres cache' },
+      { stage: 'Top-3 matches', detail: '81% accuracy, under 3s' },
+    ],
   },
   {
     slug: 'northpeak-analytics',
@@ -105,6 +118,14 @@ export const projects: Project[] = [
     outcome:
       'Ad-hoc requests replaced by self-serve KPIs on one agreed definition. The quality gate caught 4 of 4 seeded anomalies before they reached a dashboard.',
     stack: ['dbt', 'Dagster', 'Great Expectations', 'GitHub Actions', 'SQL', 'Kimball'],
+    pipeline: [
+      { stage: 'TheLook source', detail: '3.3M+ e-commerce records' },
+      { stage: 'dbt staging', detail: 'schemas standardised' },
+      { stage: 'Kimball star schema', detail: 'governed revenue ladder' },
+      { stage: 'Quality gate', detail: '73 dbt + 25 GE checks' },
+      { stage: 'Dagster refresh', detail: 'daily, fail-closed' },
+      { stage: 'Self-serve KPIs', detail: 'one agreed definition' },
+    ],
   },
   {
     slug: 'physics-surrogate',
@@ -131,6 +152,14 @@ export const projects: Project[] = [
     outcome:
       'Sub-second predictions in place of 8-hour runs, screening 85% of candidate designs before full analysis. Data-quality rules cut out-of-specification records by 25%.',
     stack: ['PyTorch', 'scikit-learn', 'SQL', 'Python', 'Power BI'],
+    pipeline: [
+      { stage: '200+ source tables', detail: 'simulation inputs and outputs' },
+      { stage: 'Feature pipeline', detail: 'SQL + Python, drift checks' },
+      { stage: 'Surrogate training', detail: 'PyTorch / scikit-learn' },
+      { stage: 'Validation', detail: 'limits documented, not just scores' },
+      { stage: 'Sub-second inference', detail: 'was 8 hours' },
+      { stage: 'Power BI screening', detail: '85% of designs pre-filtered' },
+    ],
   },
   {
     slug: 'hyperspectral-classification',
@@ -159,6 +188,14 @@ export const projects: Project[] = [
     outcome:
       'A four-month manual bottleneck became a fully automated pipeline, with improved accuracy and AUC-ROC. The work produced three peer-reviewed publications and a filed patent on automated label generation.',
     stack: ['LSTM', 'PCA', 'ENVI', 'N-FINDR', 'ResNet', '3D CNN', 'Python'],
+    pipeline: [
+      { stage: 'EO-1 Hyperion', detail: 'raw satellite sensor data' },
+      { stage: 'ENVI correction', detail: 'bad-band, radiometric, atmospheric' },
+      { stage: 'PPI / N-FINDR', detail: 'endmember detection' },
+      { stage: 'LSTM + PCA labels', detail: 'replaces 4 months of manual work' },
+      { stage: 'Stacking LSTM-CNN', detail: 'best of 25 architectures' },
+      { stage: 'Classified basin', detail: '3 publications, 1 patent' },
+    ],
   },
 ]
 

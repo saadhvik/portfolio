@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 const DETAILS = [
   { k: 'Email', v: profile.email, href: `mailto:${profile.email}` },
   { k: 'Phone', v: profile.phone, href: `tel:${profile.phoneHref}` },
-  { k: 'LinkedIn', v: '/in/saadhvik-muddana', href: profile.linkedin },
-  { k: 'GitHub', v: 'github.com/saadhvik', href: profile.github },
+  { k: 'LinkedIn', v: profile.linkedinLabel, href: profile.linkedin },
+  { k: 'GitHub', v: profile.githubLabel, href: profile.github },
 ]
 
 export default function ContactPage() {

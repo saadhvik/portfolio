@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Reveal from '@/components/ui/Reveal'
+import ArchitectureDiagram from '@/components/sections/ArchitectureDiagram'
 import MagneticButton from '@/components/ui/MagneticButton'
 import { projects } from '@/data/site'
 
@@ -57,11 +58,7 @@ export default async function CaseStudy({ params }: Params) {
         </div>
       </header>
 
-      {/* ── Full-bleed stat band ─────────────────────────────────────
-          TODO(saadhvik): swap this band for a full-bleed screenshot or
-          architecture diagram of the system when you have one. The band is
-          a deliberate stand-in — it carries the numbers rather than faking
-          a product shot. */}
+      {/* ── Full-bleed stat band ─────────────────────────────────────── */}
       <div className="relative my-16 overflow-hidden border-y border-base-600 py-16">
         <div
           className="pointer-events-none absolute inset-0"
@@ -110,6 +107,12 @@ export default async function CaseStudy({ params }: Params) {
                   </li>
                 ))}
               </ol>
+            </Reveal>
+
+            <Reveal>
+              <div className="mt-16">
+                <ArchitectureDiagram steps={project.pipeline} />
+              </div>
             </Reveal>
 
             <Reveal>
