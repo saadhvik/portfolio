@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: 'Contact',
   description:
     'Available for full-time Data Scientist and ML Engineer roles from May 2026, and for internships before then. Replies within 24 hours.',
+  alternates: { canonical: '/contact' },
 }
 
 const DETAILS = [

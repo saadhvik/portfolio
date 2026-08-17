@@ -59,7 +59,10 @@ export const metadata: Metadata = {
     description: '8h → sub-second. 81% top-3 RAG accuracy. 3 publications, 2 patents.',
     images: ['/og.png'],
   },
-  alternates: { canonical: '/' },
+  // No canonical here on purpose. A canonical in the root layout is inherited
+  // by every route, so /work and each case study would declare themselves
+  // duplicates of the homepage and drop out of the index. Each page sets its
+  // own instead.
   robots: { index: true, follow: true },
   // Without an explicit icon the browser requests /favicon.ico and 404s,
   // which Lighthouse reports as a console error.

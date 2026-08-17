@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: 'About',
   description:
     'Data Scientist and MS Computer Science candidate at the University of Cincinnati. Surrogate modelling, RAG systems, hyperspectral ML and analytics engineering.',
+  alternates: { canonical: '/about' },
 }
 
 export default function AboutPage() {

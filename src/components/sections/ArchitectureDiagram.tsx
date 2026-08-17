@@ -52,7 +52,10 @@ export default function ArchitectureDiagram({ steps }: { steps: Step[] }) {
                 >
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="mt-2 text-base font-medium leading-snug text-ink">{step.stage}</h3>
+                {/* Not a heading: these are steps in a list, and an <h3> here
+                    sits under the page <h1> with no <h2> between them, which
+                    breaks heading order for screen-reader navigation. */}
+                <p className="mt-2 text-base font-medium leading-snug text-ink">{step.stage}</p>
                 <p className="mt-1.5 font-mono text-[11px] leading-snug text-ink-faint">
                   {step.detail}
                 </p>

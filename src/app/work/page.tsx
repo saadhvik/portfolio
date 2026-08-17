@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Work',
   description:
     'Selected projects: RAG clinical trial matching, a governed dbt warehouse over 3.3M records, PyTorch physics surrogates, and hyperspectral classification research.',
+  alternates: { canonical: '/work' },
 }
 
 export default function WorkPage() {
